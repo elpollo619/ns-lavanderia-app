@@ -1,11 +1,11 @@
 import React from 'react';
-import { Pressable, Text, StyleSheet, ViewStyle, TextStyle } from 'react-native';
-import { colors, spacing, typography } from '@/types/design';
+import { Pressable, Text, StyleSheet, ViewStyle } from 'react-native';
+import { colors, spacing, typography, borderRadius, shadows } from '@/types/design';
 
 interface ButtonProps {
   children: string;
   onPress: () => void;
-  variant?: 'primary' | 'secondary';
+  variant?: 'primary' | 'secondary' | 'white';
   disabled?: boolean;
   style?: ViewStyle;
 }
@@ -23,13 +23,15 @@ export function Button({
       disabled={disabled}
       style={({ pressed }) => [
         styles.base,
-        variant === 'primary' ? styles.primary : styles.secondary,
-        pressed && !disabled && (variant === 'primary' ? styles.primaryPressed : styles.secondaryPressed),
+        variant === 'primary' && styles.primary,
+        variant === 'secondary' && styles.secondary,
+        variant === 'white' && styles.white,
+        pressed && !disabled && styles.pressed,
         disabled && styles.disabled,
         style,
       ]}
     >
-      <Text style={[styles.text, variant === 'primary' ? styles.primaryText : styles.secondaryText]}>
+      <Text style={[styles.text, variant === 'primary' || variant === 'secondary' ? styles.lightText : styles.darkText]}>
         {children}
       </Text>
     </Pressable>
@@ -38,26 +40,27 @@ export function Button({
 
 const styles = StyleSheet.create({
   base: {
-    minHeight: 48,
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.sm,
-    borderRadius: spacing.pill,
+    minHeight: 56,
+    paddingHorizontal: spacing.xl,
+    paddingVertical: spacing.base,
+    borderRadius: borderRadius.pill,
     justifyContent: 'center',
     alignItems: 'center',
   },
   primary: {
-    backgroundColor: colors.accent,
-  },
-  primaryPressed: {
-    backgroundColor: colors.accentDeep,
+    backgroundColor: colors.primary,
   },
   secondary: {
-    backgroundColor: colors.bgSoft,
-    borderWidth: 1,
-    borderColor: colors.line,
+    backgroundColor: colors.accent,
   },
-  secondaryPressed: {
-    backgroundColor: colors.bg,
+  white: {
+    backgroundColor: colors.white,
+    borderWidth: 1,
+    borderColor: colors.primaryVerySubtle,
+  },
+  pressed: {
+    opacity: 0.9,
+    transform: [{ translateY: 1 }],
   },
   disabled: {
     opacity: 0.5,
@@ -66,11 +69,12 @@ const styles = StyleSheet.create({
     fontFamily: typography.fontFamily.system,
     fontSize: typography.fontSize.body,
     fontWeight: typography.fontWeight.bold,
+    letterSpacing: typography.letterSpacing.normal,
   },
-  primaryText: {
-    color: '#FFF7F1',
+  lightText: {
+    color: colors.white,
   },
-  secondaryText: {
+  darkText: {
     color: colors.text,
   },
 });

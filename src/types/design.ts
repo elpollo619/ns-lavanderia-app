@@ -1,68 +1,69 @@
 /**
- * Design System Types — MÉRITO Brand Identity
- * Paleta, tipografía y componentes para N's Lavandería
+ * Design System Types — N's Hotel Brand Identity
+ * Paleta azul: dunkelblau (#2a3350) + hellblau (#01b1e2)
+ * Tipografía: Inter (sans-serif)
+ * Aplicado a N's Lavandería app móvil
  */
 
 export const colors = {
-  // Primary — Terracota
-  accent: '#A3482F',
-  accentDeep: '#7E341F',
-  accentSoft: '#D9A17F',
+  // Primary — Dunkelblau (azul oscuro muy profundo)
+  primary: '#2a3350',
+  primaryHover: '#1f2740',
+  primaryLight: '#4a5168', // dunkelblau-75 para texto secundario
+  primarySubtle: 'rgba(42, 51, 80, 0.15)', // bordes
+  primaryVerySubtle: 'rgba(42, 51, 80, 0.08)', // rings sutiles
 
-  // Secondary — Forest Green (Suiza)
-  forest: '#4D6758',
+  // Secondary — Hellblau (azul claro/cian)
+  accent: '#01b1e2',
+  accentHover: '#039fcc',
+  accentSoft: '#E6F7FD',
 
   // Backgrounds
-  bg: '#F6EFE4',
-  bgSoft: '#EFE4D5',
-  surface: 'rgba(255, 252, 247, 0.78)',
-  surfaceStrong: '#FFFAF4',
+  bg: '#FFFFFF',
+  bgCanvas: '#F4F8FC',
+  surface: '#FFFFFF',
 
   // Text
-  text: '#1D1C1A',
-  muted: '#61584F',
-  line: 'rgba(29, 28, 26, 0.10)',
+  text: '#2a3350', // dunkelblau
+  textSecondary: '#4a5168', // dunkelblau-75
+  muted: '#8b8f99', // dunkelblau-50
+  line: 'rgba(42, 51, 80, 0.15)',
 
   // Utilities
   white: '#FFFFFF',
   black: '#000000',
   transparent: 'transparent',
 
-  // Status (opcional)
-  success: '#4D6758',
-  error: '#A3482F',
-  warning: '#D9A17F',
+  // Status
+  success: '#01b1e2',
+  error: '#2a3350',
+  warning: '#01b1e2',
 } as const;
 
 export const typography = {
   fontFamily: {
-    display: '"Cormorant Garamond", serif',
-    system: '"Manrope", sans-serif',
+    display: '"Inter", "-apple-system", "system-ui", sans-serif',
+    system: '"Inter", "-apple-system", "system-ui", sans-serif',
     fallback: 'system-ui, -apple-system, sans-serif',
   },
   fontSize: {
-    // Display (Cormorant)
-    h1: 48,
-    h2: 35,
-    h3: 20,
-    h4: 17,
+    // Display (Inter Bold)
+    h1: 56,
+    h2: 42,
+    h3: 28,
+    h4: 20,
 
-    // Body (Manrope)
+    // Body (Inter Regular)
     body: 16,
     bodyLarge: 17,
     bodySmall: 14,
 
     // Caption & Labels
-    caption: 12,
-    labelSmall: 11,
+    caption: 13,
+    labelSmall: 12,
   },
   fontWeight: {
-    // Cormorant Garamond
-    displayMedium: '500',
-    displaySemibold: '600',
-    displayBold: '700',
-
-    // Manrope
+    // Inter weights
     regular: '400',
     medium: '500',
     semibold: '600',
@@ -70,44 +71,44 @@ export const typography = {
     extrabold: '800',
   },
   lineHeight: {
-    tight: 0.94,     // H1
-    snug: 0.98,      // H2
-    normal: 1.1,     // H3, H4
-    relaxed: 1.2,    // Label
-    loose: 1.7,      // Body
+    tight: 1.05,
+    snug: 1.1,
+    normal: 1.15,
+    relaxed: 1.2,
+    loose: 1.7,
   },
   letterSpacing: {
-    tight: -0.04,
+    tight: -0.02,
     normal: 0,
-    wide: 0.20,
-    wider: 0.06,
+    wide: 0.08,
+    wider: 0.12,
   },
 } as const;
 
 export const spacing = {
   // Base 8px system
-  xs: 4,       // 0.25rem
-  sm: 8,       // 0.5rem
-  md: 12,      // 0.75rem
-  base: 16,    // 1rem
-  lg: 20,      // 1.25rem
-  xl: 24,      // 1.5rem
-  '2xl': 32,   // 2rem
-  '3xl': 40,   // 2.5rem
-  '4xl': 48,   // 3rem
+  xs: 4,
+  sm: 8,
+  md: 12,
+  base: 16,
+  lg: 20,
+  xl: 24,
+  '2xl': 32,
+  '3xl': 40,
+  '4xl': 48,
 } as const;
 
 export const borderRadius = {
   pill: 999,
-  lg: 22,      // Cards
-  md: 16,      // Inputs
-  sm: 12,      // Small elements
-  xs: 8,
+  lg: 16,      // Cards, buttons
+  md: 12,      // Inputs
+  sm: 8,       // Small elements
+  xs: 4,
 } as const;
 
 export const shadows = {
-  sm: '0 2px 4px rgba(76, 52, 34, 0.08)',
-  base: '0 4px 12px rgba(76, 52, 34, 0.10)',
-  md: '0 12px 24px rgba(126, 52, 31, 0.25)',
-  lg: '0 20px 60px rgba(76, 52, 34, 0.12)',
+  sm: '0 1px 2px rgba(42, 51, 80, 0.04), 0 4px 12px rgba(42, 51, 80, 0.04)',
+  base: '0 4px 12px rgba(42, 51, 80, 0.10)',
+  md: '0 8px 28px rgba(42, 51, 80, 0.10)',
+  lg: '0 20px 60px rgba(42, 51, 80, 0.12)',
 } as const;
