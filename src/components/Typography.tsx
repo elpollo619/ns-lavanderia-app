@@ -51,7 +51,7 @@ const styles = StyleSheet.create({
   h1: {
     fontFamily: typography.fontFamily.display,
     fontSize: typography.fontSize.h1,
-    fontWeight: typography.fontWeight.displayBold,
+    fontWeight: typography.fontWeight.extrabold,
     color: colors.text,
     lineHeight: typography.fontSize.h1 * typography.lineHeight.tight,
     marginBottom: spacing.xl,
@@ -59,7 +59,7 @@ const styles = StyleSheet.create({
   h2: {
     fontFamily: typography.fontFamily.display,
     fontSize: typography.fontSize.h2,
-    fontWeight: typography.fontWeight.displayBold,
+    fontWeight: typography.fontWeight.extrabold,
     color: colors.text,
     lineHeight: typography.fontSize.h2 * typography.lineHeight.snug,
     marginBottom: spacing.lg,
@@ -67,7 +67,7 @@ const styles = StyleSheet.create({
   h3: {
     fontFamily: typography.fontFamily.display,
     fontSize: typography.fontSize.h3,
-    fontWeight: typography.fontWeight.displaySemibold,
+    fontWeight: typography.fontWeight.semibold,
     color: colors.text,
     lineHeight: typography.fontSize.h3 * typography.lineHeight.normal,
     marginBottom: spacing.md,

@@ -4,14 +4,14 @@ import { colors, spacing, borderRadius, typography } from '@/types/design';
 
 interface BadgeProps {
   label: string;
-  variant?: 'forest' | 'accent' | 'muted';
+  variant?: 'primary' | 'accent' | 'muted';
 }
 
 /**
  * Pill badge for categorization and labels
- * Forest green (secondary) is the default style following MÉRITO brand guidelines
+ * Uses N's Hotel design system (dunkelblau + hellblau)
  */
-export function Badge({ label, variant = 'forest' }: BadgeProps) {
+export function Badge({ label, variant = 'accent' }: BadgeProps) {
   return (
     <View style={[styles.base, styles[variant]]}>
       <Text style={[styles.text, styles[`${variant}Text`]]}>{label}</Text>
@@ -26,14 +26,14 @@ const styles = StyleSheet.create({
     borderRadius: borderRadius.pill,
     alignSelf: 'flex-start',
   },
-  forest: {
-    backgroundColor: `rgba(77, 103, 88, 0.12)`,
+  primary: {
+    backgroundColor: 'rgba(42, 51, 80, 0.12)',
   },
   accent: {
-    backgroundColor: `rgba(163, 72, 47, 0.12)`,
+    backgroundColor: 'rgba(1, 177, 226, 0.12)',
   },
   muted: {
-    backgroundColor: `rgba(97, 88, 79, 0.12)`,
+    backgroundColor: 'rgba(139, 143, 153, 0.12)',
   },
   text: {
     fontFamily: typography.fontFamily.system,
@@ -42,8 +42,8 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     letterSpacing: typography.fontSize.caption * 0.06,
   },
-  forestText: {
-    color: colors.forest,
+  primaryText: {
+    color: colors.primary,
   },
   accentText: {
     color: colors.accent,
