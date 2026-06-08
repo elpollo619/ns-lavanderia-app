@@ -1,34 +1,101 @@
-import { View, Text, StyleSheet } from 'react-native';
+import { View, ScrollView, StyleSheet } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import {
+  H1,
+  H2,
+  Body,
+  Eyebrow,
+  Button,
+  Card,
+  Badge,
+  colors,
+  spacing,
+} from '@/components';
 
 export default function HomeScreen() {
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>N's Lavandería</Text>
-      <Text style={styles.subtitle}>App móvil para reservar máquinas</Text>
-      <Text style={styles.status}>⏳ Pronto disponible...</Text>
-    </View>
+    <SafeAreaView style={styles.safeArea}>
+      <ScrollView style={styles.scrollView} contentContainerStyle={styles.container}>
+        {/* Header / Hero Section */}
+        <View style={styles.hero}>
+          <Eyebrow>Bienvenido</Eyebrow>
+          <H1>N's Lavandería</H1>
+          <Body>Reserva máquinas de lavado y secado con facilidad</Body>
+        </View>
+
+        {/* Quick Stats / Features */}
+        <View style={styles.section}>
+          <H2>Características</H2>
+          <Card>
+            <Eyebrow>Reservas en tiempo real</Eyebrow>
+            <H3>Disponibilidad actual</H3>
+            <Body>
+              Mira qué máquinas están disponibles ahora mismo y reserva tu
+              espacio.
+            </Body>
+          </Card>
+        </View>
+
+        {/* Payment Methods */}
+        <View style={styles.section}>
+          <H2>Métodos de Pago</H2>
+          <View style={styles.badgeGroup}>
+            <Badge label="TWINT" />
+            <Badge label="Apple Pay" />
+            <Badge label="Google Pay" />
+            <Badge label="Tarjeta" variant="accent" />
+          </View>
+        </View>
+
+        {/* CTA */}
+        <View style={styles.section}>
+          <Button onPress={() => console.log('Reserve now')}>
+            Reservar Ahora
+          </Button>
+        </View>
+
+        {/* Coming Soon Section */}
+        <Card variant="solid" style={styles.comingSoon}>
+          <Eyebrow>En desarrollo</Eyebrow>
+          <H3>Próximamente en ambas tiendas</H3>
+          <Body style={styles.comingSoonText}>
+            Esta aplicación está en desarrollo. Los detalles de integración con
+            máquinas, pagos TWINT y acceso SALTO KS se completarán pronto.
+          </Body>
+        </Card>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  safeArea: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#f5f5f5',
+    backgroundColor: colors.bg,
   },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    marginBottom: 10,
+  scrollView: {
+    flex: 1,
   },
-  subtitle: {
-    fontSize: 16,
-    color: '#666',
-    marginBottom: 20,
+  container: {
+    paddingHorizontal: spacing.base,
+    paddingVertical: spacing.xl,
+    gap: spacing.xl,
   },
-  status: {
-    fontSize: 14,
-    color: '#999',
+  hero: {
+    marginBottom: spacing.xl,
+  },
+  section: {
+    gap: spacing.md,
+  },
+  badgeGroup: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.md,
+  },
+  comingSoon: {
+    marginBottom: spacing.xl,
+  },
+  comingSoonText: {
+    marginTop: spacing.md,
   },
 });
