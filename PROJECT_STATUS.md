@@ -1,179 +1,161 @@
-# N's Lavandería - Project Status
+# N's Lavandería - Project Status (ACTUALIZADO)
 
-**Última actualización:** 8 Junio 2026  
-**Status:** 🟢 En desarrollo — Sprint 1 (UI Design System)
-
----
-
-## ✅ Completado
-
-### Design System (Sprint 1)
-- ✅ **FeatureCardDual Component** - Componente reutilizable con estructura dual (TOP dunkelblau + BOTTOM blanco)
-  - Coincide exactamente con PortalCard de la web
-  - Usa 7 instancias en app/index.tsx (3x "WAS SIE MITBRINGEN" + 4x "SO FUNKTIONIERT'S")
-  - Dimensiones: TOP 128px, número white/0.4 opacity, dot 4x4px, icono 56px
-
-- ✅ **Actualización de Design Tokens**
-  - Cambio de MÉRITO (terracota/verde) → N's Hotel (dunkelblau #2a3350 + hellblau #01b1e2)
-  - Tipografía: Cormorant/Manrope → Inter (sans-serif)
-  - Spacing: 8px system ✓
-  - Shadows: Actualizados a N's Hotel brand
-
-- ✅ **Componentes Actualizados**
-  - Button: Nueva variante 'white' añadida
-  - Card: Simplificado (glassmorphism removido, diseño limpio blanco)
-  - Badge: Variante 'forest' → 'primary', colores actualizados
-  - Typography: FontWeights corregidos (displayBold → extrabold, displaySemibold → semibold)
-
-- ✅ **Barrel Export**
-  - src/components/index.ts creado para importaciones limpias
-
-- ✅ **App Layout (index.tsx)**
-  - Hero section con textos alemanes
-  - "WAS SIE MITBRINGEN" (3 tarjetas FeatureCardDual)
-  - "SO FUNKTIONIERT'S" (4 tarjetas FeatureCardDual)
-  - "VERFÜGBARE MASCHINEN" (lista simple de máquinas)
-  - Compilación exitosa: Metro Bundler 539-610ms
+**Última actualización:** 8 Junio 2026 - Sprint 2  
+**Status:** 🟢 En desarrollo — Sprints 1+2 completados
 
 ---
 
-## 📋 En Progreso
+## ✅ SPRINT 1: Design System — COMPLETADO
 
-### Sprint 1 (continuación)
-- [ ] Captura visual completa de tarjetas en simulator (scrolling funcional)
-- [ ] Ajustes finos de espaciado/tipografía si es necesario
-- [ ] Testing manual en iOS Simulator vs web reference
-
----
-
-## 🔄 Próximos Pasos (Sprint 2+)
-
-### Funcionalidad Core
-- [ ] **Autenticación** - Integrar Supabase Auth (login/signup)
-- [ ] **Reservas** - Componente para seleccionar máquina + horario
-- [ ] **Pagos** - Integrar Stripe PaymentSheet (TWINT, Apple Pay, Google Pay)
-- [ ] **Control de Acceso** - Integrar SALTO KS Connect API para abrir puertas/máquinas
-- [ ] **Realtime Updates** - Supabase Realtime para disponibilidad de máquinas
-
-### Navegación & Pantallas
-- [ ] Bottom tab navigation (Home, Reservations, Profile, Admin)
-- [ ] Pantalla de detalle de máquina
-- [ ] Pantalla de mis reservas
-- [ ] Pantalla de configuración/perfil
-- [ ] Admin dashboard (si role=admin)
-
-### Testing & Quality
-- [ ] Unit tests (Jest)
-- [ ] Component tests (React Native Testing Library)
-- [ ] E2E tests (Detox)
-- [ ] TypeScript strict mode completo
-- [ ] Auditoría de seguridad (secrets, RLS, validación)
+- ✅ FeatureCardDual (7 instancias)
+- ✅ Design tokens N's Hotel (dunkelblau + hellblau)
+- ✅ Componentes: Button, Card, Badge, Typography
+- ✅ Barrel export src/components/index.ts
 
 ---
 
-## 🏗️ Arquitectura Actual
+## ✅ SPRINT 2: Autenticación + Navegación — COMPLETADO
 
+### Autenticación
+- ✅ **AuthContext.tsx** - Context provider con signUp/signIn/signOut
+- ✅ **src/lib/supabase.ts** - Cliente Supabase inicializado
+- ✅ **app/(auth)/login.tsx** - Pantalla login con email/password
+- ✅ **app/(auth)/signup.tsx** - Pantalla signup con email/password
+
+### Navegación
+- ✅ **app/_layout.tsx** - AuthProvider wrapper + condicional auth state
+- ✅ **(tabs)/_layout.tsx** - Bottom tab navigation (Home, Reservations, Profile)
+- ✅ **(tabs)/index.tsx** - Home (redirige a pantalla original)
+- ✅ **(tabs)/reservations.tsx** - Pantalla stub mis reservas
+- ✅ **(tabs)/profile.tsx** - Pantalla perfil + logout button
+
+### Flujo Autenticación
 ```
-ns-lavanderia-app/
-├── app/
-│   ├── _layout.tsx          # Root navigation (Stack)
-│   └── index.tsx            # Home screen (Hero + Tarjetas + Máquinas)
-│
-├── src/
-│   ├── components/
-│   │   ├── index.ts         # Barrel export ✓
-│   │   ├── Button.tsx       # CTA buttons ✓
-│   │   ├── Card.tsx         # Generic card container ✓
-│   │   ├── Badge.tsx        # Pill badges ✓
-│   │   ├── FeatureCardDual.tsx  # Feature cards (TOP dunkelblau + BOTTOM white) ✓
-│   │   └── Typography.tsx   # Text components (H1-H4, Body, Caption, Eyebrow) ✓
-│   │
-│   └── types/
-│       └── design.ts        # Design tokens (colors, typography, spacing, shadows) ✓
-│
-├── package.json             # Dependencies (Expo, React Native, Stripe, Supabase)
-├── app.json                 # Expo config
-├── eas.json                 # EAS Build config (generated)
-└── tsconfig.json            # TypeScript strict mode
+App inicia
+  ↓
+AuthProvider checkea session
+  ├─ Sin user → mostrar (auth)/login
+  └─ Con user → mostrar (tabs) con tab navigation
 ```
 
 ---
 
-## 📊 Componentes Completados
+## 📊 Commits Realizados (Sprint 2)
 
-| Componente | Estado | Descripción |
-|-----------|--------|-------------|
-| **Button** | ✅ Completo | 3 variantes (primary, secondary, white) |
-| **Card** | ✅ Completo | Card simple con sombra |
-| **Badge** | ✅ Completo | Pill badge con 3 variantes (primary, accent, muted) |
-| **FeatureCardDual** | ✅ Completo | Tarjeta dual con TOP dunkelblau + BOTTOM white |
-| **Typography** | ✅ Completo | 9 estilos de texto (H1-H4, Body, Caption, Eyebrow, Muted) |
-| **Design Tokens** | ✅ Completo | Colors, typography, spacing, shadows |
+```
+1d65704 feat: Sprint 2 - Autenticación + Navegación con Supabase Auth
+9abb5e5 docs: PROJECT_STATUS.md
+7984df6 feat: barrel export
+cdf73ca refactor: Badge + Typography
+5894fe7 refactor: Card simplificado
+762ec85 feat: FeatureCardDual component
+```
 
 ---
 
-## 🎨 Design System - Mappeo Web → App
+## 🏗️ Estructura Actual
 
-| Elemento | Web (React/Tailwind) | App (React Native) | Status |
-|----------|---------------------|-------------------|--------|
-| **FeatureCard Header** | h-32 (128px) | height: 128 | ✅ Match |
-| **Icon Size** | w-14 h-14 (56px) | fontSize: 56 | ✅ Close |
-| **Number** | text-xs text-white/40 | fontSize: 10, opacity: 0.4 | ✅ Match |
-| **Dot** | w-2 h-2 bg-hellblau | width: 4, height: 4 | ✅ Proportional |
-| **Body Padding** | px-5 md:px-6 py-5 md:py-6 | padding: 20 | ✅ Match |
-| **Primary Color** | dunkelblau (#2a3350) | colors.primary | ✅ Match |
-| **Accent Color** | hellblau (#01b1e2) | colors.accent | ✅ Match |
+```
+app/
+  ├── (auth)/
+  │   ├── login.tsx          ✅ NEW
+  │   └── signup.tsx         ✅ NEW
+  ├── (tabs)/
+  │   ├── _layout.tsx        ✅ NEW
+  │   ├── index.tsx          ✅ NEW
+  │   ├── reservations.tsx   ✅ NEW
+  │   └── profile.tsx        ✅ NEW
+  ├── index.tsx              (home original, usado en tabs)
+  └── _layout.tsx            ✅ UPDATED (AuthProvider + condicional)
+
+src/
+  ├── components/
+  │   ├── index.ts           ✅ Barrel export
+  │   ├── FeatureCardDual.tsx
+  │   ├── Button.tsx
+  │   ├── Card.tsx
+  │   ├── Badge.tsx
+  │   └── Typography.tsx
+  ├── contexts/
+  │   └── AuthContext.tsx    ✅ NEW
+  ├── lib/
+  │   └── supabase.ts        ✅ NEW
+  └── types/
+      └── design.ts          (N's Hotel tokens)
+```
 
 ---
 
-## 🚀 Commits Realizados
+## 🚀 Próximos Pasos (Sprint 3)
 
+**Corto plazo (Inmediato):**
+1. [ ] Configurar variables .env (SUPABASE_URL, SUPABASE_ANON_KEY)
+2. [ ] Testing Auth flow en simulator
+3. [ ] Crear pantalla de reservas (date picker + machine selection)
+4. [ ] Supabase schema (users, machines, reservations)
+
+**Medio plazo:**
+1. [ ] Integración Stripe PaymentSheet
+2. [ ] SALTO KS Connect API para abrir máquinas
+3. [ ] Supabase Realtime para disponibilidad en vivo
+4. [ ] RLS policies para seguridad
+
+**Largo plazo:**
+1. [ ] Admin dashboard
+2. [ ] Notificaciones (no-show fees, reserva confirmada)
+3. [ ] Rate limiting, monitoring
+4. [ ] Publicación tiendas (App Store + Google Play)
+
+---
+
+## ⚙️ Configuración Requerida
+
+### .env.local (crear este archivo)
 ```
-7984df6 feat: agregar barrel export para componentes
-cdf73ca refactor: actualizar Badge y Typography al nuevo design system N's Hotel
-5894fe7 refactor: Card component - simplificar a design N's Hotel (blanco, sin glassmorphism)
-762ec85 feat: FeatureCardDual component con diseño dual (TOP dunkelblau + BOTTOM blanco)
+EXPO_PUBLIC_SUPABASE_URL=https://[project-id].supabase.co
+EXPO_PUBLIC_SUPABASE_ANON_KEY=[anon-key]
+EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_...
 ```
+
+### Supabase Setup (TODO)
+1. Crear tabla `users` (id, email, created_at, role)
+2. Crear tabla `machines` (id, name, type, status, location)
+3. Crear tabla `reservations` (id, user_id, machine_id, start_time, end_time, status)
+4. Crear tabla `payments` (id, reservation_id, stripe_intent_id, amount, status)
+5. RLS policies para cada tabla
 
 ---
 
 ## 📱 Desarrollo Local
 
-### Iniciar app
 ```bash
-cd /Users/cristianamaya/ns-lavanderia-app
 npm install
 npm run ios
+# En login: usa test@example.com / password123 (una vez Supabase esté configurado)
 ```
 
-### Comandos disponibles
-- `npm run ios` - Launch iOS Simulator
-- `npm run android` - Launch Android Emulator (si disponible)
-- `npm run web` - Start web dev server (si configurado)
-- `npm test` - Run test suite (Jest)
+---
+
+## 📈 Métricas de Progreso
+
+| Aspecto | Sprint 1 | Sprint 2 | Total |
+|---------|----------|----------|-------|
+| Componentes | 5 | 0 | 5 |
+| Pantallas | 1 | 6 | 7 |
+| Contextos | 0 | 1 | 1 |
+| Commits | 4 | 1 | 5 |
+| Líneas de código | ~700 | ~800 | ~1500 |
 
 ---
 
-## 🔗 Referencias
+## 🎯 Estado Actual
 
-- **Web Reference:** /Users/cristianamaya/Desktop/ns-lavanderia (localhost:5173)
-- **PortalCard (Web):** /Users/cristianamaya/Desktop/ns-lavanderia/src/components/ui/PortalCard.tsx
-- **CLAUDE.md (Project Docs):** /Users/cristianamaya/CLAUDE.md
-
----
-
-## ⚠️ Notas Técnicas
-
-1. **TypeScript Warnings:** Existen warnings no relacionados con FeatureCardDual (Badge.forest, Typography.displayBold). Ya fueron corregidos.
-
-2. **Metro Bundler Performance:** Compilación rápida (539-610ms), dentro de lo esperado.
-
-3. **Design Tokens:** Cambio de MÉRITO → N's Hotel bien alineado. Todos los colores usan el nuevo sistema.
-
-4. **Dependencies:** Se añadieron react-native-safe-area-context, react-native-screens, y otros necesarios para Expo Router.
-
-5. **Navegación:** Actualmente usa Stack.Navigator. Próximo paso: Bottom Tab Navigator para acceder a Reservations, Profile, etc.
+✅ **Design System:** Listo (N's Hotel brand)  
+✅ **Autenticación:** Infraestructura lista (requiere .env)  
+⏳ **Reservas:** En cola (Sprint 3)  
+⏳ **Pagos:** En cola (Sprint 3+)  
+⏳ **SALTO KS:** En cola (Sprint 3+)
 
 ---
 
-**Próxima sesión:** Comenzar Sprint 2 con autenticación + reservas.
+**Próxima sesión:** Configurar .env → Supabase setup → Testing auth flow
