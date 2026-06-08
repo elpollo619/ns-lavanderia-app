@@ -4,55 +4,30 @@ import { colors, spacing, borderRadius, shadows } from '@/types/design';
 
 interface CardProps {
   children: React.ReactNode;
-  variant?: 'default' | 'solid';
   style?: ViewStyle;
 }
 
 /**
- * Card component with glassmorphism effect and terracota→forest gradient top accent
+ * Card component — Clean white card with subtle shadow
+ * Diseño N's Hotel: blanco, sombra sutil, bordes redondeados
  */
-export function Card({ children, variant = 'default', style }: CardProps) {
+export function Card({ children, style }: CardProps) {
   return (
-    <View
-      style={[
-        styles.base,
-        variant === 'default' ? styles.default : styles.solid,
-        style,
-      ]}
-    >
-      {/* Top accent line (gradient terracota → forest) */}
-      <View style={styles.accentLine} />
+    <View style={[styles.card, style]}>
       {children}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  base: {
+  card: {
+    backgroundColor: colors.white,
     borderRadius: borderRadius.lg,
-    overflow: 'hidden',
-    paddingHorizontal: spacing.xl,
-    paddingVertical: spacing.xl,
-  },
-  default: {
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.55)',
+    padding: spacing.xl,
     shadowColor: colors.black,
-    shadowOffset: { width: 0, height: 20 },
-    shadowOpacity: 0.12,
-    shadowRadius: 60,
-    elevation: 12,
-  },
-  solid: {
-    backgroundColor: colors.surfaceStrong,
-  },
-  accentLine: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: 4,
-    background: `linear-gradient(90deg, ${colors.accent} 0%, ${colors.forest} 100%)`,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.04,
+    shadowRadius: 12,
+    elevation: 4,
   },
 });
