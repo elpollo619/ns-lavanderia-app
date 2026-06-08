@@ -1,0 +1,37 @@
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Dependencies
+node_modules/
+.yarn/
+yarn-error.log
+npm-debug.log
+
+# Build
+dist/
+build/
+.expo/
+.expo-shared/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# EAS
+eas-build-on-simulator
+
+# Certificates
+*.p8
+*.p12
+*.mobileprovision
+*.jks
+*.keystore
+
+# Logs
+*.log
