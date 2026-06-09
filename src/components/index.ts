@@ -3,6 +3,9 @@ export { Button } from './Button';
 export { Card } from './Card';
 export { Badge } from './Badge';
 export { FeatureCardDual } from './FeatureCardDual';
+export { MachineSelector } from './MachineSelector';
+export { DateTimePicker } from './DateTimePicker';
+export { ReservationSummary } from './ReservationSummary';
 
 // Typography Exports
 export {
