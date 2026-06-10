@@ -1,0 +1,8 @@
+# Configuración Supabase CLI — N's Lavandería
+project_id = "upqdfimcddratmleaqay"
+
+# Stripe llama al webhook con su propia firma (stripe-signature), sin JWT
+[functions.payment-webhook]
+verify_jwt = false
+
+# El resto de funciones requieren JWT de usuario autenticado (default)
