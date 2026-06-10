@@ -4,14 +4,16 @@
  * promo "Deine 5. Ladung gratis".
  */
 import React, { useMemo, useState } from 'react';
-import { ScrollView, Text, View } from 'react-native';
+import { Alert, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
+import { openMachine } from '@/api/salto';
 import { useAuth } from '@/contexts/AuthContext';
 import { useBooking } from '@/design/BookingContext';
 import { Chip, DButton, DCard, Label, MachineCard, Press, SectionTitle, Txt } from '@/design/components';
-import { MACHINES, MachineType } from '@/design/data';
+import { MachineType } from '@/design/data';
+import { useMachines } from '@/design/useMachines';
 import { IconBell, IconGift, IconQr } from '@/design/icons';
 import { BRAND, FONTS, RADIUS, TYPE, money, useTheme } from '@/design/theme';
 
@@ -23,6 +25,19 @@ export default function HomeScreen() {
   const { booking } = useBooking();
   const router = useRouter();
   const [filter, setFilter] = useState<Filter>('alle');
+  const { machines: allMachines } = useMachines();
+  const [opening, setOpening] = useState(false);
+
+  const handleOpen = async () => {
+    if (!booking || opening) return;
+    setOpening(true);
+    const res = await openMachine(booking.machineId);
+    setOpening(false);
+    Alert.alert(
+      "N's LAVANDERIA",
+      res.ok ? 'Tür geöffnet. Gute Wäsche!' : res.error ?? 'Öffnen fehlgeschlagen.'
+    );
+  };
 
   const userName = useMemo(() => {
     const raw = (user?.user_metadata?.name as string) || user?.email || 'Gast';
@@ -41,8 +56,8 @@ export default function HomeScreen() {
     [userName]
   );
 
-  const machines = MACHINES.filter((m) => filter === 'alle' || m.type === filter);
-  const freeCount = MACHINES.filter((m) => m.status === 'frei').length;
+  const machines = allMachines.filter((m) => filter === 'alle' || m.type === filter);
+  const freeCount = allMachines.filter((m) => m.status === 'frei').length;
 
   const startBooking = (machineId?: string) =>
     router.push(machineId ? `/(tabs)/buchen?machine=${machineId}` : '/(tabs)/buchen');
@@ -115,7 +130,7 @@ export default function HomeScreen() {
                   {booking.start}–{booking.end} · {booking.programName}
                 </Txt>
               </View>
-              <Press onPress={() => {}}>
+              <Press onPress={handleOpen}>
                 <View
                   style={{
                     flexDirection: 'row',
@@ -125,11 +140,12 @@ export default function HomeScreen() {
                     borderRadius: RADIUS.pill,
                     paddingHorizontal: 14,
                     minHeight: 44,
+                    opacity: opening ? 0.6 : 1,
                   }}
                 >
                   <IconQr size={17} color="#fff" />
                   <Text style={{ fontFamily: FONTS.bold, fontSize: TYPE.body, color: '#fff' }}>
-                    Öffnen
+                    {opening ? 'Öffnet …' : 'Öffnen'}
                   </Text>
                 </View>
               </Press>
@@ -159,7 +175,7 @@ export default function HomeScreen() {
             title="Maschinen"
             right={
               <Txt size={TYPE.body} color={theme.muted}>
-                {freeCount} von {MACHINES.length} frei
+                {freeCount} von {allMachines.length} frei
               </Txt>
             }
           />

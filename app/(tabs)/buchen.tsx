@@ -24,10 +24,10 @@ import {
   buildSlots,
   EXTRAS,
   GUTHABEN,
-  MACHINES,
   PAY_METHODS,
   PROGRAMS,
 } from '@/design/data';
+import { useMachines } from '@/design/useMachines';
 import { IconCheck, IconChevronLeft, IconQr } from '@/design/icons';
 import { FONTS, RADIUS, TYPE, money, useTheme } from '@/design/theme';
 
@@ -45,6 +45,7 @@ export default function BuchenScreen() {
   const router = useRouter();
   const { setBooking } = useBooking();
   const params = useLocalSearchParams<{ machine?: string }>();
+  const { machines } = useMachines();
 
   const [step, setStep] = useState(0);
   const [machineId, setMachineId] = useState<string | null>(null);
@@ -58,14 +59,14 @@ export default function BuchenScreen() {
 
   // Tap en máquina libre del Home → pre-seleccionada, arranca en "Zeit"
   useEffect(() => {
-    if (params.machine && MACHINES.some((m) => m.id === params.machine && m.status === 'frei')) {
+    if (params.machine && machines.some((m) => m.id === params.machine && m.status === 'frei')) {
       setMachineId(params.machine);
       setStep(1);
       setConfirmed(false);
     }
-  }, [params.machine]);
+  }, [params.machine, machines]);
 
-  const machine = MACHINES.find((m) => m.id === machineId) ?? null;
+  const machine = machines.find((m) => m.id === machineId) ?? null;
   const day = DAYS.find((d) => d.id === dayId)!;
   const prog = PROGRAMS.find((p) => p.id === programId)!;
   const extrasTotal = useMemo(
@@ -92,6 +93,7 @@ export default function BuchenScreen() {
   const confirm = () => {
     if (!machine || !slot) return;
     setBooking({
+      machineId: machine.id,
       machineName: machine.name,
       machineType: machine.type,
       dayLabel: day.label,
@@ -167,7 +169,7 @@ export default function BuchenScreen() {
       <ScrollView contentContainerStyle={{ padding: 20, gap: 14, paddingBottom: 120 }}>
         {step === 0 && (
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12 }}>
-            {MACHINES.map((m) => (
+            {machines.map((m) => (
               <View key={m.id} style={{ width: '47.5%' }}>
                 <MachineCard
                   machine={m}

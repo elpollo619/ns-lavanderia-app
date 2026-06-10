@@ -4,6 +4,7 @@
 import React, { createContext, useContext, useState } from 'react';
 
 export interface Booking {
+  machineId: string;
   machineName: string;
   machineType: 'waschen' | 'trocknen';
   dayLabel: string;   // "HEUTE" | "Mo" ...
