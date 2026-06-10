@@ -5,6 +5,7 @@
 import React, { useMemo } from 'react';
 import { Alert, ScrollView, Switch, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useAuth } from '@/contexts/AuthContext';
 import { DButton, DCard, Label, Press, Txt } from '@/design/components';
@@ -28,6 +29,7 @@ const SETTINGS = [
 export default function ProfileScreen() {
   const { theme, direction, setDirection } = useTheme();
   const { user, signOut } = useAuth();
+  const router = useRouter();
 
   const userName = useMemo(() => {
     const raw = (user?.user_metadata?.name as string) || user?.email || 'Gast';
@@ -149,7 +151,10 @@ export default function ProfileScreen() {
         {/* Einstellungen */}
         <DCard style={{ padding: 6, gap: 0 }}>
           {SETTINGS.map((s, i) => (
-            <Press key={s.id} onPress={soon}>
+            <Press
+              key={s.id}
+              onPress={s.id === 'buchungen' ? () => router.push('/buchungen') : soon}
+            >
               <View
                 style={{
                   flexDirection: 'row',

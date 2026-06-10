@@ -5,10 +5,14 @@
  * Fin = inicio + duración del programa.
  */
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Animated, Easing, ScrollView, Text, TextInput, View } from 'react-native';
+import { Alert, Animated, Easing, ScrollView, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { createVorOrtBooking } from '@/api/bookings';
+import { useAuth } from '@/contexts/AuthContext';
 import { useBooking } from '@/design/BookingContext';
+import { scheduleReminder } from '@/design/notify';
+import { addMinutes, slotToDate } from '@/design/time';
 import {
   DButton,
   DCard,
@@ -27,23 +31,19 @@ import {
   PAY_METHODS,
   PROGRAMS,
 } from '@/design/data';
-import { useMachines } from '@/design/useMachines';
+import { useMachines, useTakenSlots } from '@/design/useMachines';
 import { IconCheck, IconChevronLeft, IconQr } from '@/design/icons';
 import { FONTS, RADIUS, TYPE, money, useTheme } from '@/design/theme';
 
 const DAYS = buildDays();
 const SLOTS = buildSlots();
 
-function addMinutes(slot: string, mins: number): string {
-  const [h, m] = slot.split(':').map(Number);
-  const total = h * 60 + m + mins;
-  return `${String(Math.floor(total / 60) % 24).padStart(2, '0')}:${String(total % 60).padStart(2, '0')}`;
-}
 
 export default function BuchenScreen() {
   const { theme } = useTheme();
   const router = useRouter();
   const { setBooking } = useBooking();
+  const { user } = useAuth();
   const params = useLocalSearchParams<{ machine?: string }>();
   const { machines } = useMachines();
 
@@ -56,6 +56,7 @@ export default function BuchenScreen() {
   const [payId, setPayId] = useState(PAY_METHODS[0].id);
   const [promo, setPromo] = useState('');
   const [confirmed, setConfirmed] = useState(false);
+  const [busy, setBusy] = useState(false);
 
   // Tap en máquina libre del Home → pre-seleccionada, arranca en "Zeit"
   useEffect(() => {
@@ -68,6 +69,9 @@ export default function BuchenScreen() {
 
   const machine = machines.find((m) => m.id === machineId) ?? null;
   const day = DAYS.find((d) => d.id === dayId)!;
+  const dayOffset = DAYS.indexOf(day);
+  // Disponibilidad real (vista slots_availability); null → mock del prototipo
+  const takenLive = useTakenSlots(user ? machineId : null, dayOffset);
   const prog = PROGRAMS.find((p) => p.id === programId)!;
   const extrasTotal = useMemo(
     () => EXTRAS.reduce((sum, e) => sum + (extras[e.id] ? e.add : 0), 0),
@@ -90,8 +94,39 @@ export default function BuchenScreen() {
     setConfirmed(false);
   };
 
-  const confirm = () => {
-    if (!machine || !slot) return;
+  const confirm = async () => {
+    if (!machine || !slot || busy) return;
+
+    const startDate = slotToDate(dayOffset, slot);
+
+    if (user) {
+      if (payId !== 'vorort') {
+        Alert.alert(
+          "N's LAVANDERIA",
+          'Online-Zahlung (Karte, Apple Pay, Guthaben) wird mit Stripe aktiviert. Wähle vorerst „Vor Ort bezahlen“, um verbindlich zu buchen.'
+        );
+        return;
+      }
+      setBusy(true);
+      try {
+        await createVorOrtBooking({
+          userId: user.id,
+          machineId: machine.id,
+          start: startDate,
+          durationMinutes: prog.mins,
+          amountCents: Math.round(total * 100),
+          program: prog.name,
+          extras: EXTRAS.filter((e) => extras[e.id]).map((e) => e.id),
+        });
+        scheduleReminder(machine.name, startDate).catch(() => {});
+      } catch (err) {
+        Alert.alert("N's LAVANDERIA", err instanceof Error ? err.message : 'Buchung fehlgeschlagen.');
+        return;
+      } finally {
+        setBusy(false);
+      }
+    }
+
     setBooking({
       machineId: machine.id,
       machineName: machine.name,
@@ -233,8 +268,11 @@ export default function BuchenScreen() {
             <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
               {SLOTS.map((s) => {
                 const active = slot === s.id;
+                // Disponibilidad real si hay datos live; mock del prototipo si no.
+                const isPast = dayOffset === 0 && parseInt(s.id, 10) <= new Date().getHours();
+                const taken = isPast || (takenLive ? takenLive.has(s.id) : s.taken);
                 return (
-                  <Press key={s.id} onPress={s.taken ? undefined : () => setSlot(s.id)} style={{ width: '31%' }}>
+                  <Press key={s.id} onPress={taken ? undefined : () => setSlot(s.id)} style={{ width: '31%' }}>
                     <View
                       style={{
                         minHeight: 44,
@@ -244,7 +282,7 @@ export default function BuchenScreen() {
                         backgroundColor: active ? theme.accent : theme.surface,
                         borderWidth: 1,
                         borderColor: active ? theme.accent : theme.line,
-                        opacity: s.taken ? 0.45 : 1,
+                        opacity: taken ? 0.45 : 1,
                       }}
                     >
                       <Text
@@ -252,7 +290,7 @@ export default function BuchenScreen() {
                           fontFamily: FONTS.medium,
                           fontSize: TYPE.body,
                           color: active ? '#fff' : theme.ink,
-                          textDecorationLine: s.taken ? 'line-through' : 'none',
+                          textDecorationLine: taken ? 'line-through' : 'none',
                         }}
                       >
                         {s.label}
@@ -466,10 +504,10 @@ export default function BuchenScreen() {
         }}
       >
         <DButton
-          disabled={!canNext}
+          disabled={!canNext || busy}
           onPress={() => (step < 3 ? setStep(step + 1) : confirm())}
         >
-          {step < 3 ? 'Weiter' : `${money(total)} bezahlen & buchen`}
+          {step < 3 ? 'Weiter' : busy ? 'Wird gebucht …' : `${money(total)} bezahlen & buchen`}
         </DButton>
       </View>
     </SafeAreaView>

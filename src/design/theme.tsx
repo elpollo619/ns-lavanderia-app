@@ -4,6 +4,7 @@
  * Tokens del handoff — no inventar valores.
  */
 import React, { createContext, useContext, useEffect, useState } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // ---------------------------------------------------------------------------
 // Marca
@@ -190,8 +191,22 @@ const ThemeContext = createContext<ThemeContextValue>({
   setDirection: () => {},
 });
 
+const THEME_KEY = 'ns-theme-direction';
+
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [direction, setDirection] = useState<Direction>('hell');
+  const [direction, setDirectionState] = useState<Direction>('hell');
+
+  useEffect(() => {
+    AsyncStorage.getItem(THEME_KEY).then((saved) => {
+      if (saved === 'hell' || saved === 'dunkel') setDirectionState(saved);
+    });
+  }, []);
+
+  const setDirection = (d: Direction) => {
+    setDirectionState(d);
+    AsyncStorage.setItem(THEME_KEY, d).catch(() => {});
+  };
+
   return (
     <ThemeContext.Provider value={{ theme: THEMES[direction], direction, setDirection }}>
       {children}
