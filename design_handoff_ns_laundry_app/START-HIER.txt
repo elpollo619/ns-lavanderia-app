@@ -1,0 +1,18 @@
+N's LAVANDERIA — App
+
+In diesem Drive-Ordner:
+- README.md  → Vollständige Design-Übergabe für Claude Code im Terminal
+  (Screens, Komponenten, Design-Tokens, Verhalten, Marke). Damit weiss
+  Claude Code, wie das Design im echten Codebase nachgebaut wird.
+
+Der vollständige Quellcode + die Gotham/Caflisch-Schriften liegen im
+herunterladbaren ZIP "design_handoff_ns_laundry_app.zip" (im Chat).
+Schrift-Dateien (Binärdaten) lassen sich von hier aus nicht direkt nach
+Drive laden — einfach den entpackten Ordner in diesen Drive-Ordner ziehen.
+
+Terminal-Workflow:
+1) ZIP entpacken.
+2) Ordner in Claude Code öffnen.
+3) Claude die README.md lesen lassen und das Design im Zielprojekt umsetzen.
+
+Sprache: Deutsch · Währung: CHF · Marke: N's LAVANDERIA (N's HOTEL Familie)
