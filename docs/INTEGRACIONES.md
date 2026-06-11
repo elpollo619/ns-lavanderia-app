@@ -170,9 +170,47 @@ supabase secrets set SEAM_API_KEY=seam_...        # o SALTO_CLIENT_ID/SECRET/SIT
 
 ---
 
-## 4. Máquinas (decisión aún abierta)
+## 4. Máquinas — WeWash (sistema actual) y opciones
 
-Sin cambios: **Schulthess washMaster vs sistema IoT propio** sigue pendiente de la
-respuesta de Schulthess (info@schulthess.com). El control de acceso de arriba (SALTO/Seam)
-cubre la **puerta** y puede cubrir locks de máquina; el arranque/parada de las máquinas
-en sí depende de esta decisión.
+### Hardware WeWash instalado en el local (inventario, fotos 11 jun 2026)
+
+| Componente | Detalle |
+|---|---|
+| **Hub** — "Mobile Communication Box" | Art.-Nr. 160217-H1 · Serie **W4HD11YE** · 400V~50Hz, máx. 3×16A |
+| **Client** — WeWash Box Easy230 (CH-DE) | Art.-Nr. 160220-C1 · Serie **W4CD13CF** · rotulada "T2" (Trockner 2) · 400V, máx. 3×16A · candado precintado |
+| **Antena LTE** JARFT (exterior del cuarto) | conectada al Hub con coaxial WeWash Art.-Nr. 160302-K1 (0,5 m) |
+
+**Cómo funciona:** las máquinas son "tontas" — cada **Client** corta/da la corriente
+(gating de potencia 400V) a su máquina; el **Hub** concentra los clients y sale a
+internet por **LTE** (antena Jarft). La app/web de WeWash habilita la corriente al
+pagar. Fabricante: WeWash GmbH (München), filial de BSH/Bosch.
+
+### ¿Integración con WeWash? — lo investigado
+
+- **No hay API pública** ni docs de developer. WeWash es B2B cerrado.
+- **Pero sí hacen integraciones selectivas:** la plataforma de inquilinos **Allthings**
+  integra la app WeWash en su portal (cooperación oficial). Contacto para partnerships:
+  **sales@we-wash.com**.
+- Su web CH: ~550 instalaciones en Suiza; foco en edificios/hoteles/campings —
+  no laundromats públicos (ya sabido).
+- ⚠️ **No** intentar ingeniería inversa del API privado de su app para producción:
+  filial de Bosch, riesgo legal/ToS y pueden romperlo en cualquier momento.
+
+### Opciones reales (de menor a mayor esfuerzo)
+
+1. **Deep-link (HOY, ya implementado):** la app abre el flujo Scan2Wash
+   (`app.we-wash.com/rooms?qr_id=6X3U1`) — el usuario reserva/paga en WeWash.
+   Nuestra app aporta lo demás (cuenta, acceso SALTO, fidelidad).
+2. **Partnership Allthings-style:** escribir a **sales@we-wash.com** explicando el caso
+   (ya somos ubicación con su hardware vía el hotel) y pedir la integración de la app
+   WeWash / API de booking. Puede tardar; sin garantía para una sola ubicación.
+3. **Sustituir por IoT propio (opción C del proyecto):** las fotos confirman que el
+   cableado ya pasa por cajas de gating de potencia → un electricista puede swapear
+   cada Easy230 por un **Shelly Pro 4PM / contactor + medidor** (mismo principio,
+   control nuestro). Nuestra app ya tiene todo el resto (reservas, pagos, acceso).
+   Coste hardware ≈ CHF 100–150/máquina + electricista.
+4. **Schulthess washMaster:** sigue pendiente de su respuesta (info@schulthess.com).
+
+**Recomendación:** mantener (1) como puente, enviar el correo de (2) en paralelo, y
+si WeWash no abre API en plazo razonable → ejecutar (3): es la independencia total y
+el hardware es barato comparado con las comisiones recurrentes.

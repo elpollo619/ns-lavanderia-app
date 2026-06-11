@@ -7,20 +7,23 @@ import { Alert, ScrollView, Switch, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
+import { Linking } from 'react-native';
 import { useAuth } from '@/contexts/AuthContext';
 import { DButton, DCard, Label, Press, Txt } from '@/design/components';
-import { GUTHABEN } from '@/design/data';
+import { GUTHABEN, WE_WASH_URL } from '@/design/data';
 import {
   IconBell,
   IconCalendar,
   IconCard,
   IconChevronRight,
   IconHelp,
+  IconQr,
 } from '@/design/icons';
 import { BRAND, FONTS, RADIUS, TYPE, money, useTheme } from '@/design/theme';
 
 const SETTINGS = [
   { id: 'buchungen', label: 'Meine Buchungen', Icon: IconCalendar },
+  { id: 'wewash', label: 'WeWash öffnen (aktuelles System)', Icon: IconQr },
   { id: 'zahlung', label: 'Zahlungsarten', Icon: IconCard },
   { id: 'noti', label: 'Benachrichtigungen', Icon: IconBell },
   { id: 'hilfe', label: 'Hilfe & Support', Icon: IconHelp },
@@ -153,7 +156,13 @@ export default function ProfileScreen() {
           {SETTINGS.map((s, i) => (
             <Press
               key={s.id}
-              onPress={s.id === 'buchungen' ? () => router.push('/buchungen') : soon}
+              onPress={
+                s.id === 'buchungen'
+                  ? () => router.push('/buchungen')
+                  : s.id === 'wewash'
+                    ? () => Linking.openURL(WE_WASH_URL)
+                    : soon
+              }
             >
               <View
                 style={{

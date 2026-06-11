@@ -4,6 +4,12 @@
  * Integración con Supabase: fase posterior; el diseño es la referencia.
  */
 
+/**
+ * Sistema WeWash actual del local (puente hasta tener control propio de
+ * máquinas): flujo Scan2Wash con el QR del primer Standort.
+ */
+export const WE_WASH_URL = 'https://app.we-wash.com/rooms?qr_id=6X3U1';
+
 export type MachineStatus = 'frei' | 'laeuft' | 'fertig' | 'reserviert';
 export type MachineType = 'waschen' | 'trocknen';
 
