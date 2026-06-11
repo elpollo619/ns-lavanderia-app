@@ -5,6 +5,7 @@
  * del prototipo (MACHINES) para que el diseño siga siendo demostrable.
  */
 import { useEffect, useState } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
 import { Machine, MACHINES } from './data';
 
@@ -67,9 +68,13 @@ async function enrichWithUpcoming(machines: Machine[]): Promise<Machine[]> {
 let channelSeq = 0;
 
 export function useMachines(): { machines: Machine[]; live: boolean } {
+  const { user } = useAuth();
   const [machines, setMachines] = useState<Machine[]>(MACHINES);
   const [live, setLive] = useState(false);
 
+  // Re-ejecutar cuando la sesión esté lista: la restauración desde
+  // AsyncStorage es asíncrona y el primer fetch puede salir como anon
+  // (RLS lo rechaza) → quedaría el mock para siempre.
   useEffect(() => {
     let cancelled = false;
 
@@ -100,7 +105,7 @@ export function useMachines(): { machines: Machine[]; live: boolean } {
       cancelled = true;
       supabase.removeChannel(channel);
     };
-  }, []);
+  }, [user?.id]);
 
   return { machines, live };
 }
