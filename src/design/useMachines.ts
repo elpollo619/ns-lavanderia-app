@@ -64,6 +64,8 @@ async function enrichWithUpcoming(machines: Machine[]): Promise<Machine[]> {
   );
 }
 
+let channelSeq = 0;
+
 export function useMachines(): { machines: Machine[]; live: boolean } {
   const [machines, setMachines] = useState<Machine[]>(MACHINES);
   const [live, setLive] = useState(false);
@@ -87,8 +89,10 @@ export function useMachines(): { machines: Machine[]; live: boolean } {
 
     load();
 
+    // Nombre único por instancia: Home y Buchen usan este hook a la vez y
+    // reutilizar el mismo canal tras subscribe() lanza un error de Realtime.
     const channel = supabase
-      .channel('machines-live')
+      .channel(`machines-live-${++channelSeq}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'machines' }, () => load())
       .subscribe();
 
