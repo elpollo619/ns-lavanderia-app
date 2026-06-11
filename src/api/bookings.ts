@@ -97,4 +97,25 @@ export async function cancelBooking(id: string): Promise<void> {
     .update({ status: 'cancelled', cancelled_at: new Date().toISOString() })
     .eq('id', id);
   if (error) throw new Error(error.message);
+  // Revocar la credencial de acceso si existía (fire-and-forget)
+  revokeAccess(id).catch(() => {});
+}
+
+/**
+ * Provisioning de acceso (modelo LikeMagic): credencial en SALTO KS vía
+ * Seam con ventana inicio−15 → fin+15 min. Sin proveedor configurado la
+ * función devuelve 'skipped' — no bloquea la reserva.
+ */
+export async function grantAccess(reservationId: string): Promise<void> {
+  const { error } = await supabase.functions.invoke('reservation-grant-access', {
+    body: { reservation_id: reservationId },
+  });
+  if (error) throw new Error(error.message);
+}
+
+export async function revokeAccess(reservationId: string): Promise<void> {
+  const { error } = await supabase.functions.invoke('reservation-revoke-access', {
+    body: { reservation_id: reservationId },
+  });
+  if (error) throw new Error(error.message);
 }

@@ -8,7 +8,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Alert, Animated, Easing, ScrollView, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { cancelBooking, createVorOrtBooking } from '@/api/bookings';
+import { cancelBooking, createVorOrtBooking, grantAccess } from '@/api/bookings';
 import { useAuth } from '@/contexts/AuthContext';
 import { useBooking } from '@/design/BookingContext';
 import { scheduleReminder } from '@/design/notify';
@@ -111,7 +111,7 @@ export default function BuchenScreen() {
       if (payId === 'vorort') {
         setBusy(true);
         try {
-          await createVorOrtBooking({
+          const row = await createVorOrtBooking({
             userId: user.id,
             machineId: machine.id,
             start: startDate,
@@ -120,6 +120,8 @@ export default function BuchenScreen() {
             program: prog.name,
             extras: extraIds,
           });
+          // Provisioning de acceso (modelo LikeMagic) — no bloquea la confirmación
+          grantAccess(row.id).catch(() => {});
         } catch (err) {
           Alert.alert("N's LAVANDERIA", err instanceof Error ? err.message : 'Buchung fehlgeschlagen.');
           return;
@@ -155,6 +157,8 @@ export default function BuchenScreen() {
             Alert.alert("N's LAVANDERIA", res.message);
             return;
           }
+          // El webhook también lo hace server-side; esta llamada es idempotente
+          grantAccess(res.reservationId).catch(() => {});
         } finally {
           setBusy(false);
         }

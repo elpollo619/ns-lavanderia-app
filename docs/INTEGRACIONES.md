@@ -28,11 +28,20 @@ Ventajas de ese modelo frente al remote-open puro:
 - Funciona sin conexión del teléfono al backend en el momento de abrir.
 - Coincide con lo que ya promete la web landing ("te registramos en Salto KS, abres con la app").
 
-Nuestro equivalente en miniatura ya existe (`machine-open` = apertura remota puntual);
-el siguiente paso natural es una función `reservation-grant-access` que haga el
-provisioning al confirmar. Con **Seam** esto es directo: ACS user + access group +
-mobile credential ([docs](https://docs.seam.co/latest/device-and-system-integration-guides/salto-ks-access-control-system/programming-salto-ks-mobile-credentials));
-con **Connect API** son los endpoints de Users/AccessGroups.
+**✅ Implementado (11 jun 2026):** `reservation-grant-access` + `reservation-revoke-access`
+hacen exactamente esto. Pipeline completa: reserva confirmada (vorort en la app, o
+pago online vía webhook) → ACS user en Seam con `access_schedule` inicio−15/fin+15 +
+access group(s) → registro en la tabla `access_grants` (auditoría/idempotencia) →
+revocación automática al cancelar. Sin proveedor configurado, el grant queda `skipped`
+y nada se rompe. Para activar:
+
+```bash
+supabase secrets set SEAM_API_KEY=seam_xxx SEAM_ACS_SYSTEM_ID=xxx SEAM_ACCESS_GROUP_ID=xxx
+# opcional por máquina: UPDATE machines SET access_group_id='...' WHERE id='...';
+```
+
+Fase 2: mobile credential de Seam (llave en wallet) y rama SALTO directa (TODO[SALTO]
+en el código, pendiente de la spec del Connect API).
 
 ### Dos caminos posibles
 
@@ -141,6 +150,8 @@ supabase secrets set SALTO_CLIENT_ID=xxx SALTO_CLIENT_SECRET=xxx SALTO_SITE_ID=x
 | `payment-webhook` | firma Stripe (sin JWT) | `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` |
 | `payment-capture-noshow` | cron/service | `STRIPE_SECRET_KEY` |
 | `machine-open` | JWT | `SEAM_API_KEY` **o** `SALTO_*` |
+| `reservation-grant-access` | JWT dueño o service | `SEAM_API_KEY`, `SEAM_ACS_SYSTEM_ID`, `SEAM_ACCESS_GROUP_ID` |
+| `reservation-revoke-access` | JWT dueño o service | `SEAM_API_KEY` |
 
 ```bash
 # Deploy (todas):
