@@ -1,31 +1,31 @@
 {
+  "cli": {
+    "version": ">= 7.0.0"
+  },
   "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "ios": { "simulator": false },
+      "env": {
+        "EXPO_PUBLIC_DEV_PREVIEW": "1"
+      }
+    },
+    "development-simulator": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "ios": { "simulator": true },
+      "env": {
+        "EXPO_PUBLIC_DEV_PREVIEW": "1"
+      }
+    },
     "preview": {
-      "android": {
-        "buildType": "apk"
-      },
-      "ios": {
-        "buildType": "simulator"
-      }
-    },
-    "preview2": {
-      "android": {
-        "buildType": "apk"
-      },
-      "ios": {
-        "buildType": "simulator"
-      }
-    },
-    "preview3": {
-      "developmentClient": true
+      "distribution": "internal",
+      "android": { "buildType": "apk" }
     },
     "production": {
-      "ios": {
-        "buildType": "archive"
-      },
-      "android": {
-        "buildType": "app-bundle"
-      }
+      "autoIncrement": true,
+      "android": { "buildType": "app-bundle" }
     }
   },
   "submit": {

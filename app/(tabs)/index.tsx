@@ -14,6 +14,7 @@ import { useBooking } from '@/design/BookingContext';
 import { Chip, DButton, DCard, Label, MachineCard, Press, SectionTitle, Txt } from '@/design/components';
 import { MachineType } from '@/design/data';
 import { useMachines } from '@/design/useMachines';
+import { useLoyalty } from '@/design/useLoyalty';
 import { IconBell, IconGift, IconQr } from '@/design/icons';
 import { BRAND, FONTS, RADIUS, TYPE, money, useTheme } from '@/design/theme';
 
@@ -26,6 +27,7 @@ export default function HomeScreen() {
   const router = useRouter();
   const [filter, setFilter] = useState<Filter>('alle');
   const { machines: allMachines } = useMachines();
+  const loyalty = useLoyalty();
   const [opening, setOpening] = useState(false);
 
   const handleOpen = async () => {
@@ -228,7 +230,7 @@ export default function HomeScreen() {
             >
               <View
                 style={{
-                  width: '60%',
+                  width: `${(loyalty.progress / 5) * 100}%`,
                   height: '100%',
                   borderRadius: 3,
                   backgroundColor: BRAND.hellblauDark,
@@ -236,7 +238,7 @@ export default function HomeScreen() {
               />
             </View>
             <Text style={{ fontFamily: FONTS.medium, fontSize: TYPE.label2, color: 'rgba(255,255,255,0.7)' }}>
-              3 von 5 Ladungen
+              {loyalty.progress} von 5 Ladungen
             </Text>
           </View>
         </LinearGradient>

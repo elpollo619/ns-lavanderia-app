@@ -20,6 +20,8 @@ import {
   IconQr,
 } from '@/design/icons';
 import { BRAND, FONTS, RADIUS, TYPE, money, useTheme } from '@/design/theme';
+import { useLoyalty } from '@/design/useLoyalty';
+import { useIsAdmin } from '@/design/useRole';
 
 const SETTINGS = [
   { id: 'buchungen', label: 'Meine Buchungen', Icon: IconCalendar },
@@ -33,6 +35,8 @@ export default function ProfileScreen() {
   const { theme, direction, setDirection } = useTheme();
   const { user, signOut } = useAuth();
   const router = useRouter();
+  const loyalty = useLoyalty();
+  const isAdmin = useIsAdmin();
 
   const userName = useMemo(() => {
     const raw = (user?.user_metadata?.name as string) || user?.email || 'Gast';
@@ -144,15 +148,37 @@ export default function ProfileScreen() {
           </View>
         </LinearGradient>
 
-        {/* Stats */}
+        {/* Stats (reales con sesión; demo del prototipo sin ella) */}
         <View style={{ flexDirection: 'row', gap: 12 }}>
-          <StatCard value="3" label="Ladungen / Monat" />
-          <StatCard value="1" label="Gratis-Ladung" accent />
-          <StatCard value={money(9)} label="Gespart" />
+          <StatCard value={String(loyalty.monthLoads)} label="Ladungen / Monat" />
+          <StatCard value={String(loyalty.earnedFree)} label="Gratis-Ladung" accent />
+          <StatCard value={money(loyalty.savedChf)} label="Gespart" />
         </View>
 
         {/* Einstellungen */}
         <DCard style={{ padding: 6, gap: 0 }}>
+          {isAdmin && (
+            <Press onPress={() => router.push('/admin')}>
+              <View
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 14,
+                  paddingHorizontal: 12,
+                  paddingVertical: 14,
+                  borderBottomWidth: 1,
+                  borderBottomColor: theme.line,
+                  minHeight: 52,
+                }}
+              >
+                <IconHelp size={20} color={theme.amber} />
+                <Txt size={TYPE.body2} font={FONTS.medium} style={{ flex: 1 }}>
+                  Admin-Bereich
+                </Txt>
+                <IconChevronRight size={18} color={theme.muted} />
+              </View>
+            </Press>
+          )}
           {SETTINGS.map((s, i) => (
             <Press
               key={s.id}
