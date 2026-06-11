@@ -1,4 +1,5 @@
-import { Stack } from 'expo-router';
+import { useEffect } from 'react';
+import { Stack, useRouter, useSegments } from 'expo-router';
 import { useFonts } from 'expo-font';
 import { StatusBar } from 'expo-status-bar';
 import { View } from 'react-native';
@@ -14,12 +15,26 @@ const DEV_PREVIEW = process.env.EXPO_PUBLIC_DEV_PREVIEW === '1';
 function RootLayoutNav() {
   const { user, loading } = useAuth();
   const { theme } = useTheme();
+  const router = useRouter();
+  const segments = useSegments();
+
+  const authed = !!user || DEV_PREVIEW;
+  const inAuthGroup = segments[0] === '(auth)';
+
+  // Patrón canónico de expo-router: redirigir según sesión
+  // (declarar Screens condicionalmente rompe el Stack).
+  useEffect(() => {
+    if (loading) return;
+    if (!authed && !inAuthGroup) {
+      router.replace('/(auth)/login');
+    } else if (authed && inAuthGroup) {
+      router.replace('/(tabs)');
+    }
+  }, [authed, inAuthGroup, loading]);
 
   if (loading) {
     return <View style={{ flex: 1, backgroundColor: theme.bg }} />;
   }
-
-  const authed = !!user || DEV_PREVIEW;
 
   return (
     <View style={{ flex: 1, backgroundColor: theme.bg }}>
@@ -30,14 +45,9 @@ function RootLayoutNav() {
           contentStyle: { backgroundColor: theme.bg },
         }}
       >
-        {authed ? (
-          <Stack.Screen name="(tabs)" />
-        ) : (
-          <>
-            <Stack.Screen name="(auth)/login" options={{ animation: 'none' }} />
-            <Stack.Screen name="(auth)/signup" options={{ animation: 'none' }} />
-          </>
-        )}
+        <Stack.Screen name="(tabs)" />
+        <Stack.Screen name="(auth)/login" options={{ animation: 'none' }} />
+        <Stack.Screen name="(auth)/signup" options={{ animation: 'none' }} />
       </Stack>
     </View>
   );
