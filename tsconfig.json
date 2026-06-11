@@ -11,6 +11,7 @@
     ],
     "jsx": "react-jsx",
     "moduleResolution": "bundler",
+    "moduleSuffixes": [".native", ""],
     "resolveJsonModule": true,
     "baseUrl": ".",
     "paths": {

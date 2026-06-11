@@ -8,10 +8,11 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Alert, Animated, Easing, ScrollView, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { createVorOrtBooking } from '@/api/bookings';
+import { cancelBooking, createVorOrtBooking } from '@/api/bookings';
 import { useAuth } from '@/contexts/AuthContext';
 import { useBooking } from '@/design/BookingContext';
 import { scheduleReminder } from '@/design/notify';
+import { payOnline, stripeConfigured } from '@/design/payments';
 import { addMinutes, slotToDate } from '@/design/time';
 import {
   DButton,
@@ -37,6 +38,11 @@ import { FONTS, RADIUS, TYPE, money, useTheme } from '@/design/theme';
 
 const DAYS = buildDays();
 const SLOTS = buildSlots();
+
+/** Libera el slot si el pago se canceló/falló — sin bloquear la UI. */
+function cancelBookingSafe(reservationId: string): void {
+  cancelBooking(reservationId).catch(() => {});
+}
 
 
 export default function BuchenScreen() {
@@ -100,31 +106,68 @@ export default function BuchenScreen() {
     const startDate = slotToDate(dayOffset, slot);
 
     if (user) {
-      if (payId !== 'vorort') {
+      const extraIds = EXTRAS.filter((e) => extras[e.id]).map((e) => e.id);
+
+      if (payId === 'vorort') {
+        setBusy(true);
+        try {
+          await createVorOrtBooking({
+            userId: user.id,
+            machineId: machine.id,
+            start: startDate,
+            durationMinutes: prog.mins,
+            amountCents: Math.round(total * 100),
+            program: prog.name,
+            extras: extraIds,
+          });
+        } catch (err) {
+          Alert.alert("N's LAVANDERIA", err instanceof Error ? err.message : 'Buchung fehlgeschlagen.');
+          return;
+        } finally {
+          setBusy(false);
+        }
+      } else if (payId === 'karte' || payId === 'apple') {
+        // Pago online: reserva + PaymentIntent en el servidor → PaymentSheet.
+        // Sin clave Stripe configurada (o en web) cae al aviso de abajo.
+        if (!stripeConfigured()) {
+          Alert.alert(
+            "N's LAVANDERIA",
+            'Online-Zahlung (Karte, Apple Pay) wird mit Stripe aktiviert. Wähle vorerst „Vor Ort bezahlen“, um verbindlich zu buchen.'
+          );
+          return;
+        }
+        setBusy(true);
+        try {
+          const res = await payOnline({
+            machineId: machine.id,
+            start: startDate,
+            programId: prog.id,
+            extraIds,
+            email: user.email ?? undefined,
+          });
+          if (res.status === 'canceled') {
+            // Sheet cerrado por el usuario → liberar el slot reservado
+            if (res.reservationId) cancelBookingSafe(res.reservationId);
+            return;
+          }
+          if (res.status === 'error') {
+            if (res.reservationId) cancelBookingSafe(res.reservationId);
+            Alert.alert("N's LAVANDERIA", res.message);
+            return;
+          }
+        } finally {
+          setBusy(false);
+        }
+      } else {
+        // N's Guthaben — wallet aún sin backend
         Alert.alert(
           "N's LAVANDERIA",
-          'Online-Zahlung (Karte, Apple Pay, Guthaben) wird mit Stripe aktiviert. Wähle vorerst „Vor Ort bezahlen“, um verbindlich zu buchen.'
+          "N's Guthaben wird bald verfügbar. Wähle vorerst „Vor Ort bezahlen“ oder Karte."
         );
         return;
       }
-      setBusy(true);
-      try {
-        await createVorOrtBooking({
-          userId: user.id,
-          machineId: machine.id,
-          start: startDate,
-          durationMinutes: prog.mins,
-          amountCents: Math.round(total * 100),
-          program: prog.name,
-          extras: EXTRAS.filter((e) => extras[e.id]).map((e) => e.id),
-        });
-        scheduleReminder(machine.name, startDate).catch(() => {});
-      } catch (err) {
-        Alert.alert("N's LAVANDERIA", err instanceof Error ? err.message : 'Buchung fehlgeschlagen.');
-        return;
-      } finally {
-        setBusy(false);
-      }
+
+      scheduleReminder(machine.name, startDate).catch(() => {});
     }
 
     setBooking({

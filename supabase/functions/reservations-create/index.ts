@@ -2,7 +2,12 @@
 // POST /functions/v1/reservations-create
 // Crea reserva + Stripe PaymentIntent (capture_method=manual para holds)
 //
-// Body: { machine_id: string, start_time: ISO, duration_minutes: 30|60|120,
+// Modelo del diseño (design_handoff): programa fija duración y recargo,
+// extras suman al total. El precio se calcula SIEMPRE en el servidor.
+//
+// Body: { machine_id: string, start_time: ISO,
+//         program_id: 'eco'|'standard'|'intensiv',
+//         extra_ids?: string[],
 //         payment_method?: 'twint'|'card'|'apple_pay'|'google_pay' }
 // Response: { reservation_id, client_secret, amount_cents, currency }
 // =====================================================================
@@ -11,10 +16,23 @@ import { corsHeaders } from "../_shared/cors.ts";
 import { getAuthUser, getServiceClient } from "../_shared/supabase.ts";
 import { stripe } from "../_shared/stripe.ts";
 
+// Catálogo del diseño — mantener en sync con src/design/data.ts
+const PROGRAMS: Record<string, { name: string; mins: number; addCents: number }> = {
+  eco: { name: "Eco", mins: 35, addCents: 0 },
+  standard: { name: "Standard", mins: 45, addCents: 50 },
+  intensiv: { name: "Intensiv", mins: 60, addCents: 150 },
+};
+const EXTRAS: Record<string, number> = {
+  waschmittel: 150,
+  weichspueler: 100,
+  express: 80,
+};
+
 interface CreateBody {
   machine_id: string;
   start_time: string;
-  duration_minutes: 30 | 60 | 120;
+  program_id: keyof typeof PROGRAMS;
+  extra_ids?: string[];
   payment_method?: "twint" | "card" | "apple_pay" | "google_pay";
 }
 
@@ -27,25 +45,28 @@ serve(async (req) => {
 
     // 2. Body validation
     const body = (await req.json()) as CreateBody;
-    if (!body.machine_id || !body.start_time || !body.duration_minutes) {
+    if (!body.machine_id || !body.start_time || !body.program_id) {
       return json({ error: "Missing required fields" }, 400);
     }
-    if (![30, 60, 120].includes(body.duration_minutes)) {
-      return json({ error: "Invalid duration" }, 400);
+    const program = PROGRAMS[body.program_id];
+    if (!program) {
+      return json({ error: "Invalid program" }, 400);
     }
+    const extraIds = (body.extra_ids ?? []).filter((id) => id in EXTRAS);
     const startTime = new Date(body.start_time);
     if (isNaN(startTime.getTime()) || startTime < new Date()) {
       return json({ error: "start_time must be in the future" }, 400);
     }
-    const endTime = new Date(startTime.getTime() + body.duration_minutes * 60_000);
+    const durationMinutes = program.mins;
+    const endTime = new Date(startTime.getTime() + durationMinutes * 60_000);
 
     // 3. Service client (RLS bypass para validar atómicamente)
     const supabase = getServiceClient();
 
-    // 4. Obtener máquina + precio
+    // 4. Obtener máquina + precio (server-side: el cliente no fija importes)
     const { data: machine, error: mErr } = await supabase
       .from("machines")
-      .select("id, name, status, price_cents_30min, price_cents_60min, price_cents_120min")
+      .select("id, name, status, price_cents")
       .eq("id", body.machine_id)
       .single();
     if (mErr || !machine) return json({ error: "Machine not found" }, 404);
@@ -53,12 +74,8 @@ serve(async (req) => {
       return json({ error: "Machine not bookable" }, 409);
     }
 
-    const priceMap = {
-      30: machine.price_cents_30min,
-      60: machine.price_cents_60min,
-      120: machine.price_cents_120min,
-    };
-    const amount_cents = priceMap[body.duration_minutes];
+    const extrasCents = extraIds.reduce((sum, id) => sum + EXTRAS[id], 0);
+    const amount_cents = machine.price_cents + program.addCents + extrasCents;
 
     // 5. Obtener/crear stripe_customer_id
     const { data: userRow } = await supabase
@@ -93,7 +110,8 @@ serve(async (req) => {
         supabase_user_id: user.id,
         machine_id: body.machine_id,
         start_time: startTime.toISOString(),
-        duration_minutes: String(body.duration_minutes),
+        duration_minutes: String(durationMinutes),
+        program: program.name,
       },
     });
 
@@ -105,12 +123,14 @@ serve(async (req) => {
         machine_id: body.machine_id,
         start_time: startTime.toISOString(),
         end_time: endTime.toISOString(),
-        duration_minutes: body.duration_minutes,
+        duration_minutes: durationMinutes,
         status: "pending_payment",
         payment_intent_id: intent.id,
         payment_method: body.payment_method ?? null,
         amount_cents,
         currency: "chf",
+        program: program.name,
+        extras: extraIds,
       })
       .select()
       .single();

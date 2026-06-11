@@ -4,6 +4,7 @@ import { StatusBar } from 'expo-status-bar';
 import { View } from 'react-native';
 import { AuthProvider, useAuth } from '@/contexts/AuthContext';
 import { BookingProvider } from '@/design/BookingContext';
+import { PaymentProvider } from '@/design/PaymentProvider';
 import { ThemeProvider, useTheme } from '@/design/theme';
 
 // Bypass de auth SOLO para previews de desarrollo (capturas/QA visual).
@@ -59,7 +60,9 @@ export default function RootLayout() {
     <ThemeProvider>
       <AuthProvider>
         <BookingProvider>
-          <RootLayoutNav />
+          <PaymentProvider>
+            <RootLayoutNav />
+          </PaymentProvider>
         </BookingProvider>
       </AuthProvider>
     </ThemeProvider>

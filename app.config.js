@@ -10,8 +10,8 @@ export default {
     userInterfaceStyle: "light",
     splash: {
       image: "./assets/splash.png",
-      resizeMode: "contain",
-      backgroundColor: "#ffffff"
+      resizeMode: "cover",
+      backgroundColor: "#2a3350"
     },
     assetBundlePatterns: ["**/*"],
     ios: {
@@ -21,7 +21,7 @@ export default {
     android: {
       adaptiveIcon: {
         foregroundImage: "./assets/adaptive-icon.png",
-        backgroundColor: "#ffffff"
+        backgroundColor: "#2a3350"
       },
       package: "com.nslavanderia.app"
     },
