@@ -5,19 +5,40 @@
  * Umsatz del mes · Buchungen de hoy · máquinas con toggle Wartung.
  */
 import React, { useCallback, useEffect, useState } from 'react';
-import { Alert, RefreshControl, ScrollView, Text, View } from 'react-native';
+import { Alert, RefreshControl, ScrollView, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { supabase } from '@/lib/supabase';
-import { DCard, Label, Press, Txt } from '@/design/components';
+import { DButton, DCard, Label, Press, Txt } from '@/design/components';
 import { IconChevronLeft } from '@/design/icons';
 import { FONTS, RADIUS, TYPE, money, useTheme } from '@/design/theme';
-import { useIsAdmin } from '@/design/useRole';
+import { useIsAdmin, useRole } from '@/design/useRole';
 
 interface AdminMachine {
   id: string;
   name: string;
   status: 'available' | 'in_use' | 'maintenance' | 'offline';
+}
+
+interface AdminStandort {
+  id: string;
+  slug: string;
+  name: string;
+  city: string | null;
+  status: string;
+  machines: { count: number }[];
+}
+
+function slugify(s: string): string {
+  return s
+    .toLowerCase()
+    .replace(/ä/g, 'ae')
+    .replace(/ö/g, 'oe')
+    .replace(/ü/g, 'ue')
+    .replace(/ß/g, 'ss')
+    .replace(/[''’]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
 }
 
 interface AdminBooking {
@@ -46,11 +67,19 @@ export default function AdminScreen() {
   const { theme } = useTheme();
   const router = useRouter();
   const isAdmin = useIsAdmin();
+  const { isSuperadmin } = useRole();
 
   const [revenueMonth, setRevenueMonth] = useState<number | null>(null);
   const [today, setToday] = useState<AdminBooking[] | null>(null);
   const [machines, setMachines] = useState<AdminMachine[]>([]);
+  const [standorte, setStandorte] = useState<AdminStandort[]>([]);
   const [refreshing, setRefreshing] = useState(false);
+
+  // Formularios superadmin
+  const [newName, setNewName] = useState('');
+  const [newCity, setNewCity] = useState('');
+  const [adminEmail, setAdminEmail] = useState('');
+  const [adminTarget, setAdminTarget] = useState<AdminStandort | null>(null);
 
   const load = useCallback(async () => {
     const monthStart = new Date();
@@ -60,7 +89,7 @@ export default function AdminScreen() {
     dayStart.setHours(0, 0, 0, 0);
     const dayEnd = new Date(dayStart.getTime() + 24 * 3600 * 1000);
 
-    const [rev, tod, mach] = await Promise.all([
+    const [rev, tod, mach, std] = await Promise.all([
       supabase
         .from('reservations')
         .select('amount_cents')
@@ -73,6 +102,7 @@ export default function AdminScreen() {
         .lt('start_time', dayEnd.toISOString())
         .order('start_time'),
       supabase.from('machines').select('id, name, status').order('name'),
+      supabase.from('standorte').select('id, slug, name, city, status, machines(count)').order('name'),
     ]);
 
     setRevenueMonth(
@@ -80,7 +110,48 @@ export default function AdminScreen() {
     );
     setToday((tod.data ?? []) as unknown as AdminBooking[]);
     setMachines((mach.data ?? []) as AdminMachine[]);
+    setStandorte((std.data ?? []) as unknown as AdminStandort[]);
   }, []);
+
+  const createStandort = async () => {
+    if (!newName.trim()) return;
+    const { error } = await supabase.from('standorte').insert({
+      name: newName.trim(),
+      city: newCity.trim() || null,
+      slug: slugify(newName),
+      status: 'coming_soon',
+    });
+    if (error) {
+      Alert.alert('Admin', error.message);
+      return;
+    }
+    setNewName('');
+    setNewCity('');
+    await load();
+  };
+
+  const addStandortAdmin = async () => {
+    if (!adminTarget || !adminEmail.trim()) return;
+    const { data: u } = await supabase
+      .from('users')
+      .select('id')
+      .eq('email', adminEmail.trim().toLowerCase())
+      .maybeSingle();
+    if (!u) {
+      Alert.alert('Admin', 'Kein Konto mit dieser E-Mail gefunden. Die Person muss sich zuerst in der App registrieren.');
+      return;
+    }
+    const { error } = await supabase
+      .from('standort_admins')
+      .insert({ standort_id: adminTarget.id, user_id: u.id });
+    if (error) {
+      Alert.alert('Admin', error.message.includes('duplicate') ? 'Ist bereits Admin dieses Standorts.' : error.message);
+      return;
+    }
+    Alert.alert('Admin', `${adminEmail.trim()} ist jetzt Admin von ${adminTarget.name}.`);
+    setAdminEmail('');
+    setAdminTarget(null);
+  };
 
   useEffect(() => {
     if (isAdmin) load();
@@ -170,6 +241,125 @@ export default function AdminScreen() {
                 {today === null ? '—' : today.length}
               </Text>
             </DCard>
+          </View>
+
+          {/* Standorte */}
+          <View style={{ gap: 10 }}>
+            <Label>Standorte</Label>
+            {standorte.map((s) => (
+              <DCard key={s.id} style={{ gap: 8 }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                  <View style={{ flex: 1, gap: 2 }}>
+                    <Txt size={TYPE.body2} font={FONTS.medium}>
+                      {s.name}
+                    </Txt>
+                    <Txt size={TYPE.label2} color={theme.muted}>
+                      {s.city ?? '—'} · {s.machines?.[0]?.count ?? 0} Maschinen ·{' '}
+                      {s.status === 'active' ? 'Aktiv' : s.status === 'coming_soon' ? 'Bald' : 'Inaktiv'}
+                    </Txt>
+                  </View>
+                  {isSuperadmin && (
+                    <Press onPress={() => setAdminTarget(adminTarget?.id === s.id ? null : s)}>
+                      <View
+                        style={{
+                          minHeight: 44,
+                          paddingHorizontal: 14,
+                          borderRadius: RADIUS.small,
+                          borderWidth: 1,
+                          borderColor: theme.accent,
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                        }}
+                      >
+                        <Text style={{ fontFamily: FONTS.medium, fontSize: TYPE.body, color: theme.accent }}>
+                          Admin +
+                        </Text>
+                      </View>
+                    </Press>
+                  )}
+                </View>
+                {isSuperadmin && adminTarget?.id === s.id && (
+                  <View style={{ flexDirection: 'row', gap: 10, alignItems: 'center' }}>
+                    <View
+                      style={{
+                        flex: 1,
+                        height: 44,
+                        borderRadius: RADIUS.small,
+                        backgroundColor: theme.fieldBg,
+                        borderWidth: 1,
+                        borderColor: theme.fieldBorder,
+                        justifyContent: 'center',
+                        paddingHorizontal: 12,
+                      }}
+                    >
+                      <TextInput
+                        value={adminEmail}
+                        onChangeText={setAdminEmail}
+                        placeholder="E-Mail des neuen Admins"
+                        placeholderTextColor={theme.muted}
+                        autoCapitalize="none"
+                        keyboardType="email-address"
+                        style={{ fontFamily: FONTS.book, fontSize: TYPE.body, color: theme.ink, height: '100%' }}
+                      />
+                    </View>
+                    <Press onPress={addStandortAdmin}>
+                      <View
+                        style={{
+                          minHeight: 44,
+                          paddingHorizontal: 16,
+                          borderRadius: RADIUS.small,
+                          backgroundColor: theme.accent,
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                        }}
+                      >
+                        <Text style={{ fontFamily: FONTS.bold, fontSize: TYPE.body, color: '#fff' }}>
+                          Zuweisen
+                        </Text>
+                      </View>
+                    </Press>
+                  </View>
+                )}
+              </DCard>
+            ))}
+
+            {/* Neuer Standort — solo superadmin */}
+            {isSuperadmin && (
+              <DCard style={{ gap: 10 }}>
+                <Label>Neuer Standort</Label>
+                <View style={{ flexDirection: 'row', gap: 10 }}>
+                  {[
+                    { value: newName, set: setNewName, ph: 'Name (z. B. Bahnhofstrasse Bern)' },
+                    { value: newCity, set: setNewCity, ph: 'Ort' },
+                  ].map((f, i) => (
+                    <View
+                      key={i}
+                      style={{
+                        flex: i === 0 ? 2 : 1,
+                        height: 44,
+                        borderRadius: RADIUS.small,
+                        backgroundColor: theme.fieldBg,
+                        borderWidth: 1,
+                        borderColor: theme.fieldBorder,
+                        justifyContent: 'center',
+                        paddingHorizontal: 12,
+                      }}
+                    >
+                      <TextInput
+                        value={f.value}
+                        onChangeText={f.set}
+                        placeholder={f.ph}
+                        placeholderTextColor={theme.muted}
+                        style={{ fontFamily: FONTS.book, fontSize: TYPE.body, color: theme.ink, height: '100%' }}
+                      />
+                    </View>
+                  ))}
+                </View>
+                <DButton onPress={createStandort} disabled={!newName.trim()}>
+                  Standort anlegen
+                </DButton>
+              </DCard>
+            )}
           </View>
 
           {/* Maschinen */}
