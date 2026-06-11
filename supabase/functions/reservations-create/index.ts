@@ -104,7 +104,9 @@ serve(async (req) => {
       currency: "chf",
       customer: customerId,
       payment_method_types: paymentMethods,
-      capture_method: "manual",
+      // TWINT no soporta capture_method=manual a nivel de intent;
+      // el hold manual (no-show) se aplica solo a tarjeta.
+      payment_method_options: { card: { capture_method: "manual" } },
       setup_future_usage: "off_session", // para captura fee no-show
       metadata: {
         supabase_user_id: user.id,
