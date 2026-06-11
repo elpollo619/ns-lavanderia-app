@@ -1,11 +1,38 @@
 # Integraciones — N's Lavandería
 
-**Actualizado:** 10 junio 2026
+**Actualizado:** 11 junio 2026
 Guía de configuración de control de acceso (SALTO KS), pagos (Stripe) y backend.
 
 ---
 
 ## 1. Control de Acceso — SALTO KS
+
+### Referencia de mercado: cómo lo hace LikeMagic (likemagic.tech)
+
+LikeMagic (plataforma suiza de guest journey, p. ej. Stay KooooK) lista **SALTO entre sus
+13 integraciones de "Keys"** (junto a 4Suites, dormakaba, Nuki, RemoteLock…) con una
+"arquitectura modular e interface-open": integran **directamente la API de cada fabricante**
+y orquestan con eventos (Camunda BPMN): *check-in confirmado → proceso abre la puerta
+principal → segundo proceso autoriza la puerta de la habitación*.
+
+**La lección clave para nosotros:** su flujo principal NO es "abrir remoto al pulsar un
+botón", sino **provisionar credenciales al confirmar la reserva**:
+
+> Reserva confirmada → crear/asegurar usuario en SALTO KS → asignarlo a un access group
+> con ventana de validez (inicio−15 min → fin+15 min) → el cliente abre la puerta él mismo
+> por BLE con la app Salto KS / Digital Key.
+
+Ventajas de ese modelo frente al remote-open puro:
+- **Evita el waiver de remote opening** (que SALTO deshabilita por defecto) — la apertura
+  BLE local con credencial propia no lo necesita.
+- Funciona sin conexión del teléfono al backend en el momento de abrir.
+- Coincide con lo que ya promete la web landing ("te registramos en Salto KS, abres con la app").
+
+Nuestro equivalente en miniatura ya existe (`machine-open` = apertura remota puntual);
+el siguiente paso natural es una función `reservation-grant-access` que haga el
+provisioning al confirmar. Con **Seam** esto es directo: ACS user + access group +
+mobile credential ([docs](https://docs.seam.co/latest/device-and-system-integration-guides/salto-ks-access-control-system/programming-salto-ks-mobile-credentials));
+con **Connect API** son los endpoints de Users/AccessGroups.
 
 ### Dos caminos posibles
 
