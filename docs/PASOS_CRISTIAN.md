@@ -1,6 +1,6 @@
 # Pasos de Cristian — Checklist accionable
 
-**Actualizado:** 11 junio 2026 · Todo el código está listo: cada paso "enciende" algo ya construido.
+**Actualizado:** 23 agosto 2026 · Todo el código está listo: cada paso "enciende" algo ya construido.
 
 ---
 
@@ -38,12 +38,18 @@ Preguntas exactas:
 3. ¿Se puede crear un **site separado** en SALTO para la lavandería?
 4. ¿Las puertas tienen **IQ hub** conectado a internet?
 
-## 🟡 PRIORIDAD 4 — Dos correos (me dices y te los redacto)
+## 🟡 PRIORIDAD 4 — Dos correos ✅ REDACTADOS (23 ago 2026)
 
-- **sales@we-wash.com** — pedir integración tipo Allthings (ángulo: el Standort ya
+Los dos borradores están listos en **`docs/CORREOS_BORRADORES.md`** — en alemán,
+solo hay que rellenar `[Telefonnummer]`, copiar y enviar.
+
+- **sales@we-wash.com** — integración B2B tipo Allthings (ángulo: el Standort ya
   opera con WeWash Boxes; queréis integrar la reserva en vuestra app)
 - **info@schulthess.com** — ¿washMaster permite reservas dentro de app propia
   o solo deep-link a la suya?
+
+⚠️ **Envíalos primero.** Son los únicos pendientes con semanas de latencia por
+respuesta ajena; todo lo demás depende solo de ti y se resuelve en minutos.
 
 ## 🟢 PRIORIDAD 5 — Supabase (5 min, en supabase.com/dashboard)
 
